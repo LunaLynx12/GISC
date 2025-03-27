@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Splunk",
+        "file": "splunk.json",
+        "topics": [
+            { "name": "Introduction to Splunk", "key": "splunk_introduction"},
+            { "name": "Splunk Installation on Windows", "key": "splunk_install_windows" },
+            { "name": "Splunk Installation on Linux", "key": "splunk_install_linux" },
+            { "name": "Splunk Universal Forwarders", "key": "splunk_forwarders" },
+            { "name": "Add Data to Splunk", "key": "add_data_splunk" },
+            { "name": "Search on Splunk", "key": "search_splunk" },
+            { "name": "Splunk Reports", "key": "splunk_reports" },
+            { "name": "Alerts on Splunk", "key": "splunk_alerts" },
+            { "name": "Dashboards", "key": "dashboards" },
+            { "name": "Splunk Health Status Check", "key": "splunk_health_check" },
+            { "name": "User Management on Splunk", "key": "user_management_splunk" }
+        ]
+    },
+    {
+        "name": "Wazuh",
+        "file": "wazuh.json",
+        "topics": [
+            { "name": "Introduction to Wazuh", "key": "wazuh_introduction" },
+            { "name": "Wazuh Agent Installation on Windows", "key": "wazuh_install_windows_agent" },
+            { "name": "Wazuh Agent Installation on Linux", "key": "wazuh_install_linux_agent" }
+        ]
+    },
+    {
+        "name": "Suricata",
+        "file": "suricata.json",
+        "topics": [
+            { "name": "Introduction to Suricata", "key": "suricata_introduction" },
+            { "name": "Suricata Installation on Linux", "key": "suricata_install_linux" },
+            { "name": "Basic Configuration", "key": "suricata_basic_configuration" }
+        ]
+    },
+    {
+        "name": "Kali Linux",
+        "file": "kali.json",
+        "topics": [
+            { "name": "Introduction to Kali Linux", "key": "kali_introduction" },
+            { "name": "Kali Linux Installation", "key": "kali_installation" },
+            { "name": "Kali Linux Tools", "key": "kali_tools" },
+            { "name": "Kali Linux Commands", "key": "kali_commands" },
+            { "name": "Kali Linux Network Configuration", "key": "kali_network" },
+            { "name": "Kali Linux Security", "key": "kali_security" },
+            { "name": "Kali Linux Troubleshooting", "key": "kali_troubleshooting" }
+        ]
+    }
+]

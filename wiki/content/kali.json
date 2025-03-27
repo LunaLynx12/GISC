@@ -1,0 +1,90 @@
+{
+    "kali_introduction": {
+        "title": "Introduction to Kali Linux",
+        "content": [
+            { "type": "text", "value": "Kali Linux is a Debian-based Linux distribution aimed at advanced Penetration Testing and Security Auditing. Kali contains several hundred tools that are geared towards various information security tasks, such as Penetration Testing, Security research, Computer Forensics, and Reverse Engineering." },
+            { "type": "text", "value": "Kali Linux is developed, funded, and maintained by Offensive Security, a leading information security training company." },
+            { "type": "subtitle", "value": "Kali Linux Features"},
+            { "type": "list", "value": 
+                [
+                "It is free (as in beer) and always will be: Kali Linux is completely free of charge and always will be. You will never, ever have to pay for Kali Linux.",
+                "Features an open source Git tree: The Kali Linux team is committed to the open source development model and our development tree is available for all to see. All of the source code which goes into Kali Linux is available for anyone who wants to tweak or rebuild packages to suit their specific needs.",
+                "Compliant with the Filesystem Hierarchy Standard: Since this distribution adheres to the Filesystem Hierarchy Standard, Linux users can easily locate binaries, support files, libraries, and so on.",
+                "Has wide-ranging support for devices: Kali supports a wide variety of hardware and as many wireless devices as possible, including USB-based devices.",
+                "Includes a custom kernel that is patched for injection: As penetration testers, the development team often needs to do wireless assessments, so our kernel has the latest injection patches included.",
+                "Developed in a secure environment: The Kali Linux team is a small group of individuals and they are the only ones trusted to commit packages and interact with the repositories. All changes to the distribution are done with multiple secure protocols.",
+                "Has GPG signed packages and repositories: Every package in Kali Linux is signed by each individual developer who built and committed it, and the repositories subsequently sign the packages as well.",
+                "Features multi-language support: Although penetration tools tend to be written in English, we have ensured that Kali includes true multilingual support. This allows more users to operate in their native language and locate the tools that they need for the job.",
+                "Completely customizable: We thoroughly understand that not everyone will agree with our design decisions, so we have made it as easy as possible for our more adventurous users to customize Kali Linux to their liking, all the way down to the kernel.",
+                "ARMEL and ARMHF support: Since ARM-based single-board systems like the Raspberry Pi and BeagleBone Black are becoming increasingly more inexpensive and popular with penetration testers, our team realized that Kali’s ARM support would need to be as robust as we could manage. This distribution supports fully working installations for both ARMEL and ARMHF systems, and it is available on a wide range of ARM devices. The ARM repositories are integrated into the mainline distribution so tools for ARM are updated in conjunction with the rest of the distribution."
+                ] 
+            },
+            { "type": "subtitle", "value": "What’s Different About Kali Linux?"},
+            { "type": "text", "value": "Kali Linux is specifically geared to meet the requirements of professional penetration testing and security auditing. To achieve this, several core changes have been implemented in Kali Linux which reflect these needs:" },
+            { "type": "list", "value":
+                [
+                    "Network services disabled by default: Kali Linux contains systemd hooks that disable network services by default. These hooks allow us to install various services on Kali Linux, while ensuring that our distribution remains secure by default, no matter what packages are installed. Additional services such as Bluetooth are also blocklisted by default.",
+                    "Custom Linux kernel: Kali Linux uses an upstream kernel, patched for wireless injection.",
+                    "A minimal and trusted set of repositories: given the aims and goals of Kali Linux, maintaining the integrity of the system as a whole is absolutely key. With that goal in mind, the set of upstream software sources which Kali uses is kept to an absolute minimum. Many new Kali users are tempted to add additional repositories to their sources.list, but doing so runs a very serious risk of breaking your Kali Linux installation."
+                ]
+            }
+        ]
+    },
+    "kali_installation": {
+        "title": "Kali Linux Installation",
+        "content": [
+            { "type": "text", "value": "Kali Linux can be installed on a computer's hard disk, can be booted from a live CD or live USB, or it can run within a virtual machine." },
+            { "type": "subtitle", "value": "Kali Linux Installation Steps"},
+            { "type": "list", "value": ["Download the Kali Linux ISO image", "Create a bootable USB drive", "Boot from the USB drive", "Install Kali Linux"] },
+            { "type": "text", "value": "Kali Linux can be installed on a computer's hard disk, can be booted from a live CD or live USB, or it can run within a virtual machine." }
+        ]
+    },
+    "kali_tools": {
+        "title": "Kali Linux Tools",
+        "content": [
+            { "type": "subtitle", "value": "Which Image to Chose" },
+            { "type": "text", "value": "The Kali Linux download page offers different image types (Installer, NetInstaller and Live) for download, each available for the x86-64 (ie. 64-bit) architecture. Additionally, there is an Everything flavor of the Installer and Live images. If in doubt, use the “Installer” image." },
+            { "type": "subtitle", "value": "Installer" },
+            { "type": "text", "value": "This is the recommended image to install Kali Linux. It contains a local copy of the (meta)packages listed (top10, default & large) so it can be used for complete offline installations without the need of a network connection. This image cannot be used to boot a live system (such as directly running Kali from a USB). It is only an installer image." },
+            { "type": "subtitle", "value": "NetInstaller" },
+            { "type": "text", "value": "This image can be used if you want the latest package every time you install Kali Linux or the standard installer image is too big to download. This image is very small because it does not contain a local copy of (meta)packages to install. They will all be downloaded during installation, so as a result this requires a network connection which will slow down the installation time. Only use this image if you have reasons not to use the standard installer image above. This image cannot be used to boot a live system (such as directly running Kali from a USB). It is only an installer image." },
+            { "type": "subtitle", "value": "Live" },
+            { "type": "text", "value": "This image is for running Kali Linux without installing it first so it is perfect for running off a USB drive (or a CD/DVD). You are able to install Kali Linux in its default configuration from this image but you will not be able to choose between desktop environments or to specify additional (meta)packages to install." },
+            { "type": "subtitle", "value": "Everything" },
+            { "type": "text", "value": "This image is meant for offline scenarios, when you want to use Kali Linux in a place that has no network connectivity. The image is huge (more than 9GB), as it contains nearly all of Kali’s tools already. It can be downloaded via BitTorrent only. Kali “everything” is not exactly an image, it’s a flavor. You can download either the Installer Everything image or the Live Everything image. In both case, all the tools are already there, no need for an Internet connection." },
+            { "type": "subtitle", "value": "Which Desktop Environment and (Meta)Packages to Choose During Installation" },
+            { "type": "text", "value": "Each Kali Linux installer image (not live) allows the user to select the preferred “Desktop Environment (DE)” and software collection (metapackages) to be installed with operating system (Kali Linux). We recommend sticking with the default selections and add further packages after the installation as required. Xfce is the default desktop environment, and kali-linux-top10 and kali-linux-default are the tools which get installed at the same time."},
+            { "type": "image", "value": "content/images/kali/kali_install-1.png"},
+            {"type": "text", "value": "At this screen, you may wish to not install a desktop environment, then Kali Linux becomes “headless” (no graphic interface) which uses less system resources up and commonly found on servers, dropboxes, low powered ARM devices, and the cloud. This is meant for people who are completely comfortable with the command line. You are able to install multiple Desktop Environments, allowing you to switch, we wouldn’t recommend it. You may change your mind and switch desktop environments at a later date."}
+        ]
+    },
+    "kali_commands": {
+        "title": "Kali Linux Commands",
+        "content": [
+            { "type": "text", "value": "Kali Linux includes a wide range of tools for performing various information security tasks. Here are some commonly used commands in Kali Linux:" },
+            { "type": "list", "value": ["nmap - Network exploration tool and security/port scanner", "msfconsole - Console-based interface for Metasploit Framework", "airmon-ng - Enable and disable monitor mode on wireless interfaces", "john - Password cracker", "wireshark - Network protocol analyzer", "hydra - Password cracker for various protocols", "sqlmap - Automatic SQL injection and database takeover tool", "nikto - Web server scanner", "wpscan - WordPress vulnerability scanner", "dirb - Web content scanner"] }
+        ]
+    },
+    "kali_network": {
+        "title": "Kali Linux Network Configuration",
+        "content": [
+            { "type": "text", "value": "Kali Linux provides several tools for network configuration and analysis. Some of the commonly used tools are:" },
+            { "type": "list", "value": ["ifconfig - Display or configure network interface parameters", "iwconfig - Configure a wireless network interface", "netstat - Print network connections, routing tables, interface statistics, masquerade connections, and multicast memberships", "tcpdump - Dump traffic on a network", "arp - Display or modify the ARP cache", "route - Display or modify the IP routing table"] }
+        ]
+    },
+    "kali_security": {
+        "title": "Kali Linux Security",
+        "content": [
+            { "type": "text", "value": "Kali Linux is designed for advanced Penetration Testing and Security Auditing. Here are some security features of Kali Linux:" },
+            { "type": "list", "value": ["More than 600 penetration testing tools", "Custom kernel, patched for injection", "GPG signed packages and repositories", "Multi-language support"] },
+            { "type": "text", "value": "Kali Linux is preinstalled with numerous penetration-testing programs, including nmap (a port scanner), Wireshark (a packet analyzer), John the Ripper (a password cracker), and Aircrack-ng (a software suite for penetration-testing wireless LANs)." }
+        ]
+    },
+    "kali_troubleshooting": {
+        "title": "Kali Linux Troubleshooting",
+        "content": [
+            { "type": "text", "value": "If you encounter any issues while using Kali Linux, here are some troubleshooting tips:" },
+            { "type": "list", "value": ["Check your network connection", "Update Kali Linux packages", "Check system logs for errors", "Restart the system", "Reinstall Kali Linux"] }
+        ]
+    }
+}

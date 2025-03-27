@@ -1,0 +1,64 @@
+{
+    "wazuh_introduction": {
+        "title": "Introduction to Wazuh",
+        "content": [
+            { "type": "text", "value": "Wazuh is a security platform that provides unified XDR and SIEM protection for endpoints and cloud workloads. The solution is composed of a single universal agent and three central components: the Wazuh server, the Wazuh indexer, and the Wazuh dashboard." },
+            { "type": "text", "value": "Wazuh is free and open source. Its components abide by the GNU General Public License, version 2, and the Apache License, Version 2.0 (ALv2)." },
+            { "type": "subtitle", "value": "Requirements"},
+            { "type": "text", "value": "Wazuh is compatible with the following operating systems:" },
+            { "type": "list", "value": ["Windows", "Linux", "macOS", "Docker", "Kubernetes"] },
+            { "type": "text", "value": "Hardware requirements highly depend on the number of protected endpoints and cloud workloads. This number can help estimate how much data will be analyzed and how many security alerts will be stored and indexed. Following this quickstart implies deploying the Wazuh server, the Wazuh indexer, and the Wazuh dashboard on the same host. This is usually enough for monitoring up to 100 endpoints and for 90 days of queryable/indexed alert data. The table below shows the recommended hardware for a quickstart deployment:" },
+            { "type": "image", "value": "content/images/wazuh/wz_install1.png" },
+            { "type": "text", "value": "For larger environments we recommend a distributed deployment. Multi-node cluster configuration is available for the Wazuh server and for the Wazuh indexer, providing high availability and load balancing." }
+        ]
+    },
+    "wazuh_install_windows_agent": {
+        "title": "Wazuh Agent Installation on Windows",
+        "content": [
+            { "type": "text", "value": "The agent runs on the endpoint you want to monitor and communicates with the Wazuh server, sending data in near real-time through an encrypted and authenticated channel. Monitor your Windows systems with Wazuh, from Windows XP to the latest available versions including Windows 11 and Windows Server 2022." },
+            { "type": "list", "value": ["To start the installation process, download the Windows installer (https://packages.wazuh.com/4.x/windows/wazuh-agent-4.11.0-1.msi)."] },
+            { "type": "text", "value": "To install the Wazuh agent on your system, run the Windows installer and follow the steps in the installation wizard. If you are not sure how to answer some of the prompts, use the default answers. Once installed, the agent uses a GUI for configuration, opening the log file, and starting or stopping the service."},
+            { "type": "image", "value": "content/images/wazuh/wz_install2.png" },
+            { "type": "text", "value": "The installation process is now complete, and the Wazuh agent is successfully installed on your Windows endpoint. By default, all agent files are stored in C:\\Program Files (x86)\\ossec-agent."}
+        ]
+    },
+    "wazuh_install_linux_agent": {
+        "title": "Wazuh Agent Installation on Linux",
+        "content": [
+            { "type": "text", "value": "The agent runs on the endpoint you want to monitor and communicates with the Wazuh server, sending data in near real-time through an encrypted and authenticated channel. The deployment of a Wazuh agent on a Linux system uses deployment variables that facilitate the task of installing, registering, and configuring the agent." },
+            { "type": "subtitle", "value": "Add the Wazuh repository"},
+            { "type": "list", "value": 
+                [
+                "Install the GPG key: curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --no-default-keyring --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import && chmod 644 /usr/share/keyrings/wazuh.gpg",
+                "Add the repository: echo 'deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main' | tee -a /etc/apt/sources.list.d/wazuh.list",
+                "Update the package information: apt-get update"
+                ]
+            },
+            { "type": "subtitle", "value": "Deploy a Wazuh agent"},
+            { "type": "list", "value": 
+                [
+                "WAZUH_MANAGER='10.0.0.2' apt-get install wazuh-agent",
+                "systemctl daemon-reload",
+                "systemctl enable wazuh-agent",
+                "systemctl start wazuh-agent"
+                ]
+            },
+            { "type": "subtitle", "value": "Recommended action - Disable Wazuh updates"},
+            { "type": "text", "value": "Compatibility between the Wazuh agent and the Wazuh manager is guaranteed when the Wazuh manager version is later than or equal to that of the Wazuh agent. Therefore, we recommend disabling the Wazuh repository to prevent accidental upgrades. To do so, use the following command:" },
+            { "type": "list", "value": 
+                [
+                "sed -i 's/^deb/#deb/' /etc/apt/sources.list.d/wazuh.list",
+                "apt-get update"
+                ]
+            },
+            { "type": "text", "value": "Alternatively, you can set the package state to hold. This action stops updates but you can still upgrade it manually using apt-get install." },
+            { "type": "list", "value": 
+                [
+                "echo 'wazuh-agent hold' | dpkg --set-selections"
+                ]
+            },
+            { "type": "text", "value": "The installation process is now complete, and the Wazuh agent is successfully installed on your Linux endpoint." }
+
+        ]
+    }
+}

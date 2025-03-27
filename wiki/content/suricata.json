@@ -1,0 +1,42 @@
+{
+    "suricata_introduction": {
+        "title": "Introduction to Suricata",
+        "content": [
+            { "type": "subtitle", "value": "What is Suricata" },
+            { "type": "text", "value": "Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. It is open source and owned by a community-run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF." }
+        ]
+    },
+    "suricata_install_linux": {
+        "title": "Suricata Installation on Linux",
+        "content": [
+            { "type": "text", "value": "It's assumed that you run a recent Ubuntu release as the official PPA can then be used for the installation. To install the latest stable Suricata version, follow the steps:" },
+            { "type": "list", "value": [
+                "sudo apt-get install software-properties-common",
+                "sudo add-apt-repository ppa:oisf/suricata-stable",
+                "sudo apt update",
+                "sudo apt install suricata jq"
+            ] },
+            { "type": "text", "value": "The dedicated PPA repository is added, and after updating the index, Suricata can be installed. We recommend installing the jq tool at this time as it will help with displaying information from Suricata's EVE JSON output (described later in this guide)." },
+            { "type": "text", "value": "After installing Suricata, you can check which version of Suricata you have running and with what options, as well as the service state:" },
+            { "type": "list", "value": [
+                "sudo suricata --build-info",
+                "sudo systemctl status suricata"
+            ] }
+        ]
+    },
+    "suricata_basic_configuration": {
+        "title": "Basic Configuration",
+        "content": [
+            { "type": "text", "value": "First, determine the interface(s) and IP address(es) on which Suricata should be inspecting network packets:" },
+            { "type": "image", "value": "content/images/suricata/suricata_config1.png" },
+            { "type": "text", "value": "Use that information to configure Suricata:" },
+            { "type": "list", "value": ["sudo vim /etc/suricata/suricata.yaml"] },
+            { "type": "text", "value": "There are many possible configuration options, we focus on the setup of the HOME_NET variable and the network interface configuration. The HOME_NET variable should include, in most scenarios, the IP address of the monitored interface and all the local networks in use. The default already includes the RFC 1918 networks. In this example 10.0.0.23 is already included within 10.0.0.0/8. If no other networks are used the other predefined values can be removed. In this example the interface name is enp1s0 so the interface name in the af-packet section needs to match. An example interface config might look like this:" },
+            { "type": "text", "value": "Capture settings:" },
+            { "type": "image", "value": "content/images/suricata/suricata_config2.png" },
+            { "type": "text", "value": "This configuration uses the most recent recommended settings for the IDS runmode for basic setups. There are many of possible configuration options which are described in dedicated chapters and are especially relevant for high performance setups." }
+
+        ]
+    }
+
+}
