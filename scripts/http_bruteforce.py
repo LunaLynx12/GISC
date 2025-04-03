@@ -1,3 +1,6 @@
+# This script is for educational purposes only. Use it responsibly and legally.
+# Brute force Script - by Chiper Andrei
+
 import requests
 
 default_passwords = ["admin", "password", "123456", "password123"]
