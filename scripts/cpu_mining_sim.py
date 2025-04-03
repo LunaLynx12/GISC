@@ -40,3 +40,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.processes)
+# This script is for educational purposes only. Use it responsibly and legally.
+# Port scanning Script - by Cristhian Zamora
