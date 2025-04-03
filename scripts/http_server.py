@@ -1,3 +1,6 @@
+# This script is for educational purposes only. Use it responsibly and legally.
+# Simple HTTP Server Script - by Chiper Andrei
+
 import socket
 
 class SimpleHTTPServer:
