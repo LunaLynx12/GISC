@@ -21,8 +21,10 @@ async function fetchTeamStructure() {
     try {
         const teams = await fetchFolderContents('wiki');
 
+        const allowedTeams = ['Splunk', 'Attack Scripts', 'Infrastructure'];
+
         const teamFolders = teams.filter(item =>
-            item.type === 'dir' && item.name.match(/^team\d+$/i)
+            item.type === 'dir' && allowedTeams.includes(item.name)
         );
 
         const teamData = await Promise.all(
@@ -30,7 +32,7 @@ async function fetchTeamStructure() {
                 const members = await fetchFolderContents(`wiki/${team.name}`);
                 return {
                     id: team.name,
-                    name: team.name.replace(/^team/, 'Team '),
+                    name: team.name,
                     members: members.filter(m => m.type === 'dir')
                 };
             })
@@ -42,6 +44,7 @@ async function fetchTeamStructure() {
         renderError('Failed to load team structure. Please try again later.');
     }
 }
+
 
 function renderTeamList(teams) {
     const teamsContainer = document.getElementById('teams-list');
