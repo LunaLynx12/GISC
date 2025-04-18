@@ -1,103 +1,202 @@
-document.addEventListener("DOMContentLoaded", function () {
-    loadReadme();
-    loadSidebar();
+const GITHUB_USERNAME = 'LunaLynx12';
+const GITHUB_REPO = 'GISC';
+const GITHUB_BRANCH = 'main';
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.location.hash.startsWith('#/wiki/')) {
+        loadMarkdownContent();
+    } else {
+        fetchTeamStructure();
+    }
 });
 
-function loadReadme() {
-    fetch("README.md")
-    .then(response => response.text())
-    .then(markdown => {
-        let converter = new showdown.Converter();
-        let htmlContent = converter.makeHtml(markdown);
-        document.getElementById("content-body").innerHTML = htmlContent;
-    })
-    .catch(error => {
-        console.error("Error loading README.md:", error);
-        document.getElementById("content-body").innerHTML = "<p>Failed to load content.</p>";
+async function fetchFolderContents(path) {
+    const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
+    return response.json(); // returns an array of items
+}
+
+async function fetchTeamStructure() {
+    try {
+        const teams = await fetchFolderContents('wiki');
+
+        const teamFolders = teams.filter(item =>
+            item.type === 'dir' && item.name.match(/^team\d+$/i)
+        );
+
+        const teamData = await Promise.all(
+            teamFolders.map(async team => {
+                const members = await fetchFolderContents(`wiki/${team.name}`);
+                return {
+                    id: team.name,
+                    name: team.name.replace(/^team/, 'Team '),
+                    members: members.filter(m => m.type === 'dir')
+                };
+            })
+        );
+
+        renderTeamList(teamData);
+    } catch (error) {
+        console.error('Error loading team structure:', error);
+        renderError('Failed to load team structure. Please try again later.');
+    }
+}
+
+function renderTeamList(teams) {
+    const teamsContainer = document.getElementById('teams-list');
+    teamsContainer.innerHTML = '';
+
+    if (teams.length === 0) {
+        teamsContainer.innerHTML = '<p>No teams found.</p>';
+        return;
+    }
+
+    teams.forEach(team => {
+        const teamCard = document.createElement('div');
+        teamCard.className = 'team-card';
+
+        const memberList = team.members.length > 0 ?
+            `<ul class="member-list">
+                ${team.members.map(member =>
+                    `<li>
+                        <a href="#/wiki/${team.id}/${member.name}" 
+                           data-path="${team.id}/${member.name}">
+                            ${member.name}
+                        </a>
+                    </li>`
+                ).join('')}
+            </ul>` :
+            '<p>No members in this team</p>';
+
+        teamCard.innerHTML = `
+            <h3>${team.name}</h3>
+            ${memberList}
+        `;
+
+        teamsContainer.appendChild(teamCard);
+    });
+
+    document.querySelectorAll('.member-list a').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const path = this.getAttribute('data-path');
+            window.location.hash = `#/wiki/${path}`;
+            loadMarkdownContent();
+        });
     });
 }
 
-function loadSidebar() {
-    fetch("categories.json")
-        .then(response => response.json())
-        .then(categories => {
-            let sidebar = document.getElementById("sidebar-content");
-            sidebar.innerHTML = "";
+async function loadMarkdownContent() {
+    const hash = window.location.hash.substring(1); // Remove the #
+    const pathParts = hash.split('/').slice(2); // Remove 'wiki' prefix
 
-            categories.forEach(category => {
-                let section = document.createElement("div");
-                section.innerHTML = `<h2>${category.name}</h2><ul></ul>`;
-                let ul = section.querySelector("ul");
+    const lastPart = pathParts[pathParts.length - 1];
+    const isFile = lastPart.endsWith('.md');
 
-                category.topics.forEach(topic => {
-                    let li = document.createElement("li");
-                    li.textContent = topic.name;
-                    li.onclick = () => loadTopic(category.file, topic.key);
-                    ul.appendChild(li);
-                });
+    try {
+        if (isFile) {
+            const fileName = pathParts.pop();
+            const userPath = pathParts.join('/');
+            await renderMarkdownFile(userPath, fileName);
+        } else {
+            // Get the list of files for this user
+            const files = await fetchFolderContents(`wiki/${pathParts.join('/')}`);
+            const markdownFiles = files.filter(file =>
+                file.type === 'file' && file.name.endsWith('.md')
+            );
 
-                sidebar.appendChild(section);
-            });
-        })
-        .catch(error => console.error("Error loading categories:", error));
-}
-
-function loadTopic(categoryFile, topicKey) {
-    fetch(`content/${categoryFile}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data[topicKey]) {
-                showContent(data[topicKey]);
+            if (markdownFiles.length > 0) {
+                await renderMarkdownFile(pathParts.join('/'), markdownFiles[0].name);
             } else {
-                console.error("Topic not found in", categoryFile);
+                renderError('No markdown files found for this user.');
             }
-        })
-        .catch(error => console.error("Error loading topic:", error));
+        }
+    } catch (error) {
+        console.error('Error loading markdown content:', error);
+        renderError('Failed to load content. Please try again later.');
+    }
 }
-function showContent(topic) {
-    let contentArea = document.querySelector(".content");
-    contentArea.innerHTML = `<h2>${topic.title}</h2>`;
 
-    topic.content.forEach(section => {
-        if (section.type === "text") {
-            let paragraph = document.createElement("p");
-            paragraph.innerText = section.value;
-            contentArea.appendChild(paragraph);
-        } else if (section.type === "image") {
-            let image = document.createElement("img");
-            image.src = section.value;
-            contentArea.appendChild(image);
-        } else if (section.type === "subtitle") {
-            let subtitle = document.createElement("h3");
-            subtitle.innerText = section.value;
-            contentArea.appendChild(subtitle);
-        } else if (section.type === "list") {
-            let ul = document.createElement("ul");
-            section.value.forEach(item => {
-                let li = document.createElement("li");
-                li.innerText = item;
-                ul.appendChild(li);
-            });
-            contentArea.appendChild(ul);
-        } else if (section.type === "pdf") {
-            let iframe = document.createElement("iframe");
-            iframe.src = section.value;
-            iframe.width = "100%";
-            iframe.height = "500px"; // Adjust as needed
-            iframe.style.border = "none";
-            contentArea.appendChild(iframe);
+async function renderMarkdownFile(userPath, filename) {
+    const mainContent = document.querySelector('main');
+    const breadcrumbPath = generateBreadcrumb([...userPath.split('/'), filename]);
+
+    const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}/wiki/${userPath}/${filename}`;
+    const response = await fetch(rawUrl);
+    const markdown = await response.text();
+
+    const htmlContent = marked.parse(markdown); // marked.js needed
+
+    mainContent.innerHTML = `
+        ${breadcrumbPath}
+        <div class="markdown-content">
+            ${htmlContent}
+            <div class="file-list">
+                <h3>Other files in this directory:</h3>
+                <ul>
+                    ${(await getOtherFiles(userPath, filename)).join('')}
+                </ul>
+            </div>
+        </div>
+    `;
+}
+
+async function getOtherFiles(userPath, currentFilename) {
+    const files = await fetchFolderContents(`wiki/${userPath}`);
+    return files
+        .filter(file =>
+            file.type === 'file' &&
+            file.name.endsWith('.md') &&
+            file.name !== currentFilename
+        )
+        .map(file => `
+            <li>
+                <a href="#/wiki/${userPath}/${file.name}" 
+                   data-path="${userPath}/${file.name}">
+                    ${file.name}
+                </a>
+            </li>
+        `);
+}
+
+function generateBreadcrumb(pathParts) {
+    let breadcrumb = '<div class="breadcrumb"><a href="#">Home</a>';
+    let currentPath = '';
+
+    pathParts.forEach((part, index) => {
+        currentPath += `${part}/`;
+        if (index < pathParts.length - 1) {
+            breadcrumb += ` / <a href="#/wiki/${currentPath.slice(0, -1)}">${part}</a>`;
+        } else {
+            breadcrumb += ` / ${part}`;
         }
     });
+
+    breadcrumb += '</div>';
+    return breadcrumb;
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    const sidebar = document.querySelector(".sidebar");
-    const toggleBtn = document.createElement("button");
-    toggleBtn.textContent = "☰ Menu";
-    toggleBtn.classList.add("sidebar-toggle");
-    document.body.appendChild(toggleBtn);
+function renderError(message) {
+    const mainContent = document.querySelector('main');
+    mainContent.innerHTML = `
+        <div class="error-message">
+            <p>${message}</p>
+            <button onclick="window.location.hash=''">Return Home</button>
+        </div>
+    `;
+}
 
-    toggleBtn.addEventListener("click", function() {
-        sidebar.classList.toggle("visible");
-    });
+window.addEventListener('hashchange', function () {
+    if (window.location.hash.startsWith('#/wiki/')) {
+        loadMarkdownContent();
+    } else {
+        document.querySelector('main').innerHTML = `
+            <div class="teams-container">
+                <h2>Teams</h2>
+                <div id="teams-list" class="teams-grid"></div>
+            </div>
+        `;
+        fetchTeamStructure();
+    }
 });
