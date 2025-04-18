@@ -1,0 +1,1 @@
+alert("External XSS made by Petre Radu & Ginerica Alexandru");
