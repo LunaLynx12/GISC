@@ -98,9 +98,13 @@ async function loadMarkdownContent() {
         const isFile = lastSegment.includes('.');
 
         if (isFile) {
+            if (shouldRedirect(fullPath)) {
+                const githubUrl = `https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}/blob/${GITHUB_BRANCH}/wiki/${fullPath}`;
+                window.location.href = githubUrl;
+                return;
+            }
             await renderFileContent(fullPath);
         } else {
-            // Only show directory listing - no automatic notes.md search
             const items = await fetchFolderContents(`wiki/${fullPath}`);
             renderDirectoryListing(fullPath, items);
         }
@@ -120,17 +124,6 @@ async function renderFileContent(fullPath) {
     const directoryPath = fullPath.split('/').slice(0, -1).join('/');
     const directoryItems = await fetchFolderContents(`wiki/${directoryPath}`);
 
-    // Check if this is an unsupported file type that should redirect
-    if (shouldRedirect(fullPath)) {
-        // Only redirect on direct click, not automatically
-        if (!sessionStorage.getItem('preventRedirect')) {
-            sessionStorage.setItem('preventRedirect', 'true');
-            window.location.href = githubUrl;
-            return;
-        }
-        sessionStorage.removeItem('preventRedirect');
-    }
-
     // Handle different file types
     if (fullPath.endsWith('.md')) {
         const response = await fetch(rawUrl);
@@ -147,9 +140,13 @@ async function renderFileContent(fullPath) {
 
         const fileList = otherFiles.map(item => {
             const icon = item.type === 'dir' ? '📁' : getFileIcon(item.name);
+            const href = `#/wiki/${directoryPath}/${item.name}`;
+            const redirectClass = shouldRedirect(`${directoryPath}/${item.name}`) ? 'redirect-link' : '';
+            const clickHandler = redirectClass ? 'onclick="handleLinkClick(event)"' : '';
+            
             return `
                 <li>
-                    <a href="#/wiki/${directoryPath}/${item.name}" class="${shouldRedirect(`${directoryPath}/${item.name}`) ? 'redirect-link' : ''}">
+                    <a href="${href}" class="${redirectClass}" ${clickHandler}>
                         ${icon} ${item.name}
                     </a>
                 </li>
@@ -189,15 +186,6 @@ async function renderFileContent(fullPath) {
             </div>
         `;
     }
-
-    // Add click handlers for navigation links
-    document.querySelectorAll('.file-navigation a').forEach(link => {
-        link.addEventListener('click', function (e) {
-            if (this.classList.contains('redirect-link')) {
-                sessionStorage.setItem('preventRedirect', 'true');
-            }
-        });
-    });
 }
 
 function renderDirectoryListing(currentPath, items) {
@@ -208,9 +196,11 @@ function renderDirectoryListing(currentPath, items) {
         const icon = item.type === 'dir' ? '📁' : getFileIcon(item.name);
         const href = `#/wiki/${currentPath ? currentPath + '/' : ''}${item.name}`;
         const redirectClass = shouldRedirect(`${currentPath}/${item.name}`) ? 'redirect-link' : '';
+        const clickHandler = redirectClass ? 'onclick="handleLinkClick(event)"' : '';
+        
         return `
             <li class="directory-item">
-                <a href="${href}" class="${redirectClass}">${icon} ${item.name}</a>
+                <a href="${href}" class="${redirectClass}" ${clickHandler}>${icon} ${item.name}</a>
             </li>
         `;
     }).join('');
@@ -222,18 +212,22 @@ function renderDirectoryListing(currentPath, items) {
             <ul>${content}</ul>
         </div>
     `;
+}
 
-    // Add click handlers for redirect links
-    document.querySelectorAll('.directory-item a.redirect-link').forEach(link => {
-        link.addEventListener('click', function (e) {
-            sessionStorage.setItem('preventRedirect', 'true');
-        });
-    });
+function handleLinkClick(e) {
+    const href = this.getAttribute('href');
+    const path = href.replace('#/wiki/', '');
+    
+    if (shouldRedirect(path)) {
+        e.preventDefault();
+        const githubUrl = `https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}/blob/${GITHUB_BRANCH}/wiki/${path}`;
+        window.location.href = githubUrl;
+    }
 }
 
 function shouldRedirect(filename) {
-    // Only redirect for specific file types
-    return /\.(html?|pdf|docx?|xlsx?|pptx?|zip|rar|exe|dmg)$/i.test(filename);
+    // Redirect all non-Markdown files to GitHub
+    return !filename.endsWith('.md') && !filename.endsWith('/');
 }
 
 function generateBreadcrumb(pathParts) {
