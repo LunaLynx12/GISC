@@ -14,13 +14,12 @@ async function fetchFolderContents(path) {
     const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
-    return response.json(); // returns an array of items
+    return response.json();
 }
 
 async function fetchTeamStructure() {
     try {
         const teams = await fetchFolderContents('wiki');
-
         const allowedTeams = ['Splunk', 'Attack Scripts', 'Infrastructure'];
 
         const teamFolders = teams.filter(item =>
@@ -45,7 +44,6 @@ async function fetchTeamStructure() {
     }
 }
 
-
 function renderTeamList(teams) {
     const teamsContainer = document.getElementById('teams-list');
     teamsContainer.innerHTML = '';
@@ -63,8 +61,8 @@ function renderTeamList(teams) {
             `<ul class="member-list">
                 ${team.members.map(member =>
                     `<li>
-                        <a href="#/wiki/${team.id}/${member.name}" 
-                           data-path="${team.id}/${member.name}">
+                        <a href="#/wiki/${team.id}/${member.name}/notes.md" 
+                           data-path="${team.id}/${member.name}/notes.md">
                             ${member.name}
                         </a>
                     </li>`
@@ -91,76 +89,151 @@ function renderTeamList(teams) {
 }
 
 async function loadMarkdownContent() {
-    const hash = window.location.hash.substring(1); // Remove the #
-    const pathParts = hash.split('/').slice(2); // Remove 'wiki' prefix
-
-    const lastPart = pathParts[pathParts.length - 1];
-    const isFile = lastPart.endsWith('.md');
+    const hash = window.location.hash.substring(1);
+    const pathParts = hash.split('/').slice(2);
+    const fullPath = pathParts.join('/');
 
     try {
-        if (isFile) {
-            const fileName = pathParts.pop();
-            const userPath = pathParts.join('/');
-            await renderMarkdownFile(userPath, fileName);
-        } else {
-            // Get the list of files for this user
-            const files = await fetchFolderContents(`wiki/${pathParts.join('/')}`);
-            const markdownFiles = files.filter(file =>
-                file.type === 'file' && file.name.endsWith('.md')
-            );
+        const lastSegment = pathParts[pathParts.length - 1] || '';
+        const isFile = lastSegment.includes('.');
 
-            if (markdownFiles.length > 0) {
-                await renderMarkdownFile(pathParts.join('/'), markdownFiles[0].name);
-            } else {
-                renderError('No markdown files found for this user.');
-            }
+        if (isFile) {
+            await renderFileContent(fullPath);
+        } else {
+            // Only show directory listing - no automatic notes.md search
+            const items = await fetchFolderContents(`wiki/${fullPath}`);
+            renderDirectoryListing(fullPath, items);
         }
     } catch (error) {
-        console.error('Error loading markdown content:', error);
+        console.error('Error loading content:', error);
         renderError('Failed to load content. Please try again later.');
     }
 }
 
-async function renderMarkdownFile(userPath, filename) {
+async function renderFileContent(fullPath) {
     const mainContent = document.querySelector('main');
-    const breadcrumbPath = generateBreadcrumb([...userPath.split('/'), filename]);
+    const breadcrumb = generateBreadcrumb(fullPath.split('/'));
+    const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}/wiki/${fullPath}`;
+    const githubUrl = `https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}/blob/${GITHUB_BRANCH}/wiki/${fullPath}`;
 
-    const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}/wiki/${userPath}/${filename}`;
-    const response = await fetch(rawUrl);
-    const markdown = await response.text();
+    // Get directory contents for navigation
+    const directoryPath = fullPath.split('/').slice(0, -1).join('/');
+    const directoryItems = await fetchFolderContents(`wiki/${directoryPath}`);
 
-    const htmlContent = marked.parse(markdown); // marked.js needed
+    // Check if this is an unsupported file type that should redirect
+    if (shouldRedirect(fullPath)) {
+        // Only redirect on direct click, not automatically
+        if (!sessionStorage.getItem('preventRedirect')) {
+            sessionStorage.setItem('preventRedirect', 'true');
+            window.location.href = githubUrl;
+            return;
+        }
+        sessionStorage.removeItem('preventRedirect');
+    }
 
-    mainContent.innerHTML = `
-        ${breadcrumbPath}
-        <div class="markdown-content">
-            ${htmlContent}
-            <div class="file-list">
-                <h3>Other files in this directory:</h3>
-                <ul>
-                    ${(await getOtherFiles(userPath, filename)).join('')}
-                </ul>
+    // Handle different file types
+    if (fullPath.endsWith('.md')) {
+        const response = await fetch(rawUrl);
+        const fileContent = await response.text();
+        const htmlContent = marked.parse(fileContent);
+        
+        // Filter out current file and sort directories first
+        const otherFiles = directoryItems
+            .filter(item => item.name !== fullPath.split('/').pop())
+            .sort((a, b) => {
+                if (a.type === b.type) return a.name.localeCompare(b.name);
+                return a.type === 'dir' ? -1 : 1;
+            });
+
+        const fileList = otherFiles.map(item => {
+            const icon = item.type === 'dir' ? '📁' : getFileIcon(item.name);
+            return `
+                <li>
+                    <a href="#/wiki/${directoryPath}/${item.name}" class="${shouldRedirect(`${directoryPath}/${item.name}`) ? 'redirect-link' : ''}">
+                        ${icon} ${item.name}
+                    </a>
+                </li>
+            `;
+        }).join('');
+
+        mainContent.innerHTML = `
+            ${breadcrumb}
+            <div class="markdown-content">${htmlContent}</div>
+            ${otherFiles.length > 0 ? `
+            <div class="file-navigation">
+                <h3>Other Files in This Directory:</h3>
+                <ul>${fileList}</ul>
             </div>
-        </div>
-    `;
+            ` : ''}
+        `;
+    } 
+    else if (isImageFile(fullPath)) {
+        mainContent.innerHTML = `
+            ${breadcrumb}
+            <div class="image-container">
+                <img src="${rawUrl}" alt="${fullPath.split('/').pop()}" />
+                <p><a href="${rawUrl}" download>Download Image</a></p>
+            </div>
+        `;
+    }
+    else if (isCodeFile(fullPath)) {
+        const response = await fetch(rawUrl);
+        const fileContent = await response.text();
+        const language = getCodeLanguage(fullPath);
+        const highlightedCode = hljs.highlight(fileContent, { language }).value;
+        mainContent.innerHTML = `
+            ${breadcrumb}
+            <div class="code-container">
+                <pre><code class="language-${language}">${highlightedCode}</code></pre>
+                <p><a href="${githubUrl}" target="_blank">View on GitHub</a></p>
+            </div>
+        `;
+    }
+
+    // Add click handlers for navigation links
+    document.querySelectorAll('.file-navigation a').forEach(link => {
+        link.addEventListener('click', function (e) {
+            if (this.classList.contains('redirect-link')) {
+                sessionStorage.setItem('preventRedirect', 'true');
+            }
+        });
+    });
 }
 
-async function getOtherFiles(userPath, currentFilename) {
-    const files = await fetchFolderContents(`wiki/${userPath}`);
-    return files
-        .filter(file =>
-            file.type === 'file' &&
-            file.name.endsWith('.md') &&
-            file.name !== currentFilename
-        )
-        .map(file => `
-            <li>
-                <a href="#/wiki/${userPath}/${file.name}" 
-                   data-path="${userPath}/${file.name}">
-                    ${file.name}
-                </a>
+function renderDirectoryListing(currentPath, items) {
+    const mainContent = document.querySelector('main');
+    const breadcrumb = generateBreadcrumb(currentPath.split('/'));
+
+    const content = items.map(item => {
+        const icon = item.type === 'dir' ? '📁' : getFileIcon(item.name);
+        const href = `#/wiki/${currentPath ? currentPath + '/' : ''}${item.name}`;
+        const redirectClass = shouldRedirect(`${currentPath}/${item.name}`) ? 'redirect-link' : '';
+        return `
+            <li class="directory-item">
+                <a href="${href}" class="${redirectClass}">${icon} ${item.name}</a>
             </li>
-        `);
+        `;
+    }).join('');
+
+    mainContent.innerHTML = `
+        ${breadcrumb}
+        <div class="directory-listing">
+            <h2>${decodeURIComponent(currentPath) || 'Root Directory'}</h2>
+            <ul>${content}</ul>
+        </div>
+    `;
+
+    // Add click handlers for redirect links
+    document.querySelectorAll('.directory-item a.redirect-link').forEach(link => {
+        link.addEventListener('click', function (e) {
+            sessionStorage.setItem('preventRedirect', 'true');
+        });
+    });
+}
+
+function shouldRedirect(filename) {
+    // Only redirect for specific file types
+    return /\.(html?|pdf|docx?|xlsx?|pptx?|zip|rar|exe|dmg)$/i.test(filename);
 }
 
 function generateBreadcrumb(pathParts) {
@@ -168,16 +241,54 @@ function generateBreadcrumb(pathParts) {
     let currentPath = '';
 
     pathParts.forEach((part, index) => {
-        currentPath += `${part}/`;
-        if (index < pathParts.length - 1) {
-            breadcrumb += ` / <a href="#/wiki/${currentPath.slice(0, -1)}">${part}</a>`;
-        } else {
-            breadcrumb += ` / ${part}`;
+        if (part) {
+            currentPath += `${part}/`;
+            if (index < pathParts.length - 1) {
+                breadcrumb += ` / <a href="#/wiki/${currentPath.slice(0, -1)}">${decodeURIComponent(part)}</a>`;
+            } else {
+                breadcrumb += ` / ${decodeURIComponent(part)}`;
+            }
         }
     });
 
     breadcrumb += '</div>';
     return breadcrumb;
+}
+
+// Helper functions
+function isImageFile(filename) {
+    return /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(filename);
+}
+
+function isCodeFile(filename) {
+    return /\.(js|py|java|cpp|c|html|css|php|rb|sh|json)$/i.test(filename);
+}
+
+function getCodeLanguage(filename) {
+    const extension = filename.split('.').pop().toLowerCase();
+    const languages = {
+        'js': 'javascript',
+        'py': 'python',
+        'html': 'html',
+        'css': 'css',
+        'java': 'java',
+        'cpp': 'cpp',
+        'c': 'c',
+        'php': 'php',
+        'rb': 'ruby',
+        'sh': 'bash',
+        'json': 'json'
+    };
+    return languages[extension] || 'plaintext';
+}
+
+function getFileIcon(filename) {
+    if (isImageFile(filename)) return '🖼️';
+    if (isCodeFile(filename)) return '📝';
+    if (filename.endsWith('.pdf')) return '📕';
+    if (filename.endsWith('.doc') || filename.endsWith('.docx')) return '📄';
+    if (filename.endsWith('.md')) return '📄';
+    return '📄';
 }
 
 function renderError(message) {
