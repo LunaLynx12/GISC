@@ -25,4 +25,4 @@ def extract_images_from_pdf(pdf_path, output_folder="extracted_images"):
 
     print(f"✅ Extracted {image_count} image(s) to '{output_folder}'.")
 
-extract_images_from_pdf("Jose.pdf")
+extract_images_from_pdf("raport_alina.pdf")

